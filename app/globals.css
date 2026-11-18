@@ -1,0 +1,244 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   AppBuscaCasa — Design System Global CSS
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* Dark mode como default */
+    --background: 222 20% 8%;
+    --foreground: 210 20% 95%;
+
+    --card: 222 18% 11%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 222 18% 12%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 220 75% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 16% 18%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 222 16% 16%;
+    --muted-foreground: 215 14% 55%;
+
+    --accent: 45 90% 50%;
+    --accent-foreground: 222 20% 8%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 18%;
+    --input: 222 18% 15%;
+    --ring: 220 75% 55%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image: 
+      radial-gradient(ellipse at 20% 50%, hsla(220, 80%, 20%, 0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, hsla(45, 80%, 20%, 0.08) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+
+  /* Scrollbar personalizado */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+
+  /* Focus visible global */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* ============================================================
+   Componentes utilitarios
+   ============================================================ */
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-md border border-border/50 rounded-xl;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Card con hover elevation */
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-card-hover hover:-translate-y-0.5;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(45, 90%, 60%) 100%);
+  }
+
+  /* Gradient border */
+  .gradient-border {
+    position: relative;
+    border-radius: var(--radius);
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: calc(var(--radius) + 1px);
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(45, 90%, 50%));
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: destination-out;
+    padding: 1px;
+  }
+
+  /* Badge de estado */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .status-tracking {
+    @apply status-badge bg-blue-500/15 text-blue-300 border border-blue-500/20;
+  }
+  .status-visited {
+    @apply status-badge bg-emerald-500/15 text-emerald-300 border border-emerald-500/20;
+  }
+  .status-discarded {
+    @apply status-badge bg-red-500/15 text-red-300 border border-red-500/20;
+  }
+
+  /* Shimmer skeleton */
+  .skeleton {
+    @apply rounded-md;
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--secondary)) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Input dark style */
+  .input-dark {
+    @apply bg-input border-border text-foreground placeholder:text-muted-foreground;
+    @apply focus:ring-2 focus:ring-primary/50 focus:border-primary/50;
+    @apply transition-colors duration-150;
+  }
+
+  /* Sidebar item */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium;
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary/50;
+    @apply transition-all duration-150 cursor-pointer;
+  }
+  .sidebar-item.active {
+    @apply bg-primary/15 text-primary border border-primary/20;
+  }
+
+  /* Star rating */
+  .star-filled {
+    @apply text-gold-400 fill-gold-400;
+  }
+  .star-empty {
+    @apply text-muted;
+  }
+  .star-interactive {
+    @apply transition-all duration-100 cursor-pointer hover:scale-110;
+  }
+
+  /* Blind rating states */
+  .blind-pending {
+    @apply bg-slate-500/10 border-slate-500/20 text-slate-400;
+  }
+  .blind-partial {
+    @apply bg-amber-500/10 border-amber-500/20 text-amber-400;
+  }
+  .blind-completed {
+    @apply bg-emerald-500/10 border-emerald-500/20 text-emerald-400;
+  }
+
+  /* Property photo gallery */
+  .photo-gallery {
+    @apply relative overflow-hidden rounded-xl;
+    aspect-ratio: 16/9;
+  }
+
+  /* Gradient overlay en fotos */
+  .photo-overlay {
+    @apply absolute inset-0;
+    background: linear-gradient(
+      to bottom,
+      transparent 50%,
+      rgba(0, 0, 0, 0.7) 100%
+    );
+  }
+}
+
+/* ============================================================
+   Animaciones adicionales
+   ============================================================ */
+@layer utilities {
+  .animate-enter {
+    animation: fade-in 0.35s ease-out forwards;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Blur background para modales */
+  .modal-backdrop {
+    @apply fixed inset-0 z-50;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Dots decorativos */
+  .bg-dots {
+    background-image: radial-gradient(circle, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Número grande con degradado */
+  .number-gradient {
+    @apply font-display font-bold;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(45, 90%, 60%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
