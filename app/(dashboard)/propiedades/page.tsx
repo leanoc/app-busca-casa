@@ -44,8 +44,13 @@ export default function PropiedadesPage() {
 
       const res = await fetch(`/api/properties?${params.toString()}`);
       const data = await res.json();
+      if (!res.ok) {
+        console.error("Error al obtener propiedades:", data.error);
+      }
       setProperties(data.properties || []);
       setTotal(data.total || 0);
+    } catch (err) {
+      console.error("Fetch properties error:", err);
     } finally {
       setLoading(false);
     }

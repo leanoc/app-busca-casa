@@ -45,19 +45,19 @@ export const CONNECTOR_REGISTRY: Record<ConnectorKey, ConnectorInfo> = {
     key: "alquilarg",
     name: "Alquilarg",
     type: "local_agency",
-    baseUrl: "https://www.alquilarg.com.ar",
+    baseUrl: "https://www.alquilarg.com/",
   },
   kuligowski: {
     key: "kuligowski",
     name: "Kuligowski",
     type: "local_agency",
-    baseUrl: "https://www.kuligowski.com.ar",
+    baseUrl: "https://kuligowskipropiedades.com.ar/",
   },
   axion: {
     key: "axion",
     name: "Axion Propiedades",
     type: "local_agency",
-    baseUrl: "https://www.axionpropiedades.com.ar",
+    baseUrl: "https://www.axionpropiedades.com/",
   },
   erica_mijailovsky: {
     key: "erica_mijailovsky",
@@ -69,7 +69,7 @@ export const CONNECTOR_REGISTRY: Record<ConnectorKey, ConnectorInfo> = {
     key: "ridella",
     name: "Ridella Propiedades",
     type: "local_agency",
-    baseUrl: "https://www.ridella.com.ar",
+    baseUrl: "https://www.ridellapropiedades.com.ar/",
   },
   sts_propiedades: {
     key: "sts_propiedades",
@@ -81,7 +81,7 @@ export const CONNECTOR_REGISTRY: Record<ConnectorKey, ConnectorInfo> = {
     key: "debona",
     name: "Debona",
     type: "local_agency",
-    baseUrl: "https://www.debona.com.ar",
+    baseUrl: "https://debonapropiedades.com.ar/",
   },
   generic: {
     key: "generic",

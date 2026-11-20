@@ -28,8 +28,8 @@ async function getDashboardStats(supabase: Awaited<ReturnType<typeof createClien
     supabase.from("properties").select("*", { count: "exact", head: true }),
     supabase.from("properties").select("*", { count: "exact", head: true }).eq("status", "visited"),
     supabase.from("properties").select("*", { count: "exact", head: true }).eq("status", "tracking"),
-    supabase.from("properties").select("id, title, price_usd, locality, status, scraped_at, thumbnail_url").order("scraped_at", { ascending: false }).limit(5),
-    supabase.from("rating_blind_status").select("*").eq("blind_status", "completed").limit(5),
+    supabase.from("properties").select("id, title, price_usd, locality, status, scraped_at, thumbnail_url").order("scraped_at", { ascending: false }).limit(50),
+    supabase.from("rating_blind_status").select("*").eq("blind_status", "completed").limit(10),
   ]);
 
   return {
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
               Ver todas
             </Link>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
             {stats.recentProps.length === 0 ? (
               <EmptyState message="Aún no hay propiedades. ¡Iniciá un scraping!" />
             ) : (

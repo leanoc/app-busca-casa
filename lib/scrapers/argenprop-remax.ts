@@ -274,56 +274,79 @@ export class GenericParser extends BaseParser {
       const $ = cheerio.load(html);
       result.pagesProcessed = 1;
 
-      // Detectar cards de propiedades por heurística
-      const selectors = [
-        "article",
-        ".property",
-        ".propiedad",
-        ".listing",
-        ".inmueble",
-        '[class*="property"]',
-        '[class*="propiedad"]',
-        '[class*="card"]',
-        '[class*="listing"]',
-      ];
+      // 1. Detección específica para sitios basados en plantillas inmobiliarias (ej: Kuligowski, Erica Mijailovsky)
+      let listings: cheerio.Cheerio<any> = $("#results .property, .results .property, #results article");
 
-      let listings: cheerio.Cheerio<any> = $([]);
-      for (const sel of selectors) {
-        const found = $(sel);
-        if (found.length > 2) {
-          listings = found;
-          break;
+      // 2. Si no encontró, buscar por selectores genéricos evitando elementos que contengan a toda la lista
+      if (listings.length === 0) {
+        const selectors = [
+          "div.property",
+          "article.property",
+          "div.propiedad",
+          "article.propiedad",
+          "div.listing-card",
+          "div.card-propiedad",
+          "article",
+          ".property",
+          ".propiedad",
+          ".listing",
+        ];
+
+        for (const sel of selectors) {
+          const found = $(sel).filter((_, el) => $(el).find(sel).length === 0);
+          if (found.length >= 2) {
+            listings = found;
+            break;
+          }
         }
       }
 
       listings.each((_, el) => {
         try {
           const $el = $(el);
-          const title = this.cleanText(
+          const linkEl = $el.find("a[href*='/inmueble/']").first().length 
+            ? $el.find("a[href*='/inmueble/']").first() 
+            : $el.find("a[href]").first();
+            
+          const relUrl = linkEl.attr("href") || "";
+          if (!relUrl || relUrl.startsWith("mailto:") || relUrl.startsWith("tel:") || relUrl.includes("quienes-somos") || relUrl.includes("contacto")) {
+            return;
+          }
+
+          const originalUrl = this.absoluteUrl(relUrl, catalogUrl);
+          const externalId = relUrl.split("/").filter(Boolean).pop() || originalUrl;
+
+          // Extraer título real
+          let title = this.cleanText(
             $el.find("h1, h2, h3, h4, .title, .titulo, [class*='title'], [class*='titulo']").first().text()
           );
-          if (!title || title.length < 5) return;
-
-          const linkEl = $el.find("a[href]").first();
-          const relUrl = linkEl.attr("href") || "";
-          const originalUrl = relUrl ? this.absoluteUrl(relUrl, catalogUrl) : undefined;
-
+          
           const allText = $el.text();
           const priceUsd = this.extractUSD(allText);
           const priceArs = !priceUsd ? this.extractARS(allText) : undefined;
           const surfaceTotal = this.extractSurface(allText);
 
+          // Si el título es solo "Casa" o "Departamento", intentar enriquecerlo con la dirección o subtítulo
           const address = this.cleanText(
-            $el.find('[class*="address"], [class*="location"], [class*="direcci"], address').first().text()
+            $el.find('[class*="address"], [class*="location"], [class*="direcci"], address, figure, aside').first().text()
           );
+
+          if (title.length < 5 && address) {
+            title = `${title} - ${address.slice(0, 40)}`;
+          } else if (!title) {
+            title = address ? address.slice(0, 50) : "Propiedad";
+          }
 
           const photos: string[] = [];
           $el.find("img").each((_, img) => {
             const src = $(img).attr("src") || $(img).attr("data-src") || $(img).attr("data-lazy") || "";
-            if (src && src.startsWith("http") && !src.includes("placeholder")) photos.push(src);
+            if (src && src.startsWith("http") && !src.includes("placeholder") && !src.includes("logo")) {
+              photos.push(src);
+            }
           });
 
           result.properties.push({
+            external_id: externalId,
             title,
             original_url: originalUrl,
             address: address || undefined,

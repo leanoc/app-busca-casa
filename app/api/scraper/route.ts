@@ -95,6 +95,38 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// DELETE /api/scraper?id=xxx — Eliminar fuente y sus propiedades asociadas
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = await createAdminClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const id = request.nextUrl.searchParams.get("id");
+    if (!id) {
+      return NextResponse.json({ error: "ID de fuente requerido" }, { status: 400 });
+    }
+
+    // 1. Eliminar propiedades asociadas a esta fuente
+    await supabase.from("properties").delete().eq("source_id", id);
+
+    // 2. Eliminar la fuente
+    const { error: deleteError } = await supabase
+      .from("real_estate_sources")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) throw deleteError;
+
+    return NextResponse.json({ success: true, message: "Fuente y propiedades eliminadas" });
+  } catch (error) {
+    console.error("Error en DELETE /api/scraper:", error);
+    return NextResponse.json({ error: "Error al eliminar la fuente" }, { status: 500 });
+  }
+}
+
 // ---- Job de scraping (async) ----
 async function runScrapeJob(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

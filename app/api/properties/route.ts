@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { type PropertyFilters } from "@/types";
 
 // GET /api/properties — Listar propiedades con filtros
@@ -27,7 +27,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(sp.get("limit") || "24");
     const offset = (page - 1) * limit;
 
-    let query = supabase
+    // Obtenemos el cliente admin para bypass de la política recursiva de ratings
+    const adminSupabase = await createAdminClient();
+
+    let query = adminSupabase
       .from("properties")
       .select(`
         *,
@@ -66,7 +69,10 @@ export async function GET(request: NextRequest) {
       .order("scraped_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase error en GET /api/properties:", error);
+      throw error;
+    }
 
     return NextResponse.json({
       properties: data,
@@ -74,9 +80,12 @@ export async function GET(request: NextRequest) {
       page,
       totalPages: Math.ceil((count || 0) / limit),
     });
-  } catch (error) {
-    console.error("Error GET /api/properties:", error);
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+  } catch (error: any) {
+    console.error("Error GET /api/properties:", error?.message || error);
+    return NextResponse.json({ 
+      error: error?.message || "Error interno al consultar propiedades",
+      details: error
+    }, { status: 500 });
   }
 }
 

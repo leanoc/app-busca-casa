@@ -30,6 +30,7 @@ export default function FuentesClient({ initialSources }: FuentesClientProps) {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [scrapingIds, setScrapingIds] = useState<Set<string>>(new Set());
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -94,6 +95,30 @@ export default function FuentesClient({ initialSources }: FuentesClientProps) {
       pollStatus(sourceId);
     } finally {
       // Estado se actualiza vía polling
+    }
+  };
+
+  const handleDeleteSource = async (sourceId: string, sourceName: string) => {
+    if (!confirm(`¿Estás seguro de que querés eliminar la fuente "${sourceName}" y todas sus propiedades asociadas?`)) {
+      return;
+    }
+
+    setDeletingId(sourceId);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/scraper?id=${sourceId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setSources((prev) => prev.filter((s) => s.id !== sourceId));
+      setSuccess(`Fuente "${sourceName}" eliminada correctamente.`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error al eliminar la fuente");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -350,11 +375,24 @@ export default function FuentesClient({ initialSources }: FuentesClientProps) {
                   <button
                     id={`btn-rescrape-${source.id}`}
                     onClick={() => triggerScrape(source.id, source.url)}
-                    disabled={isRunning}
+                    disabled={isRunning || deletingId === source.id}
                     className="p-2 rounded-lg hover:bg-secondary/50 text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     title="Volver a scrapear"
                   >
                     <RefreshCw className={`w-4 h-4 ${isRunning ? "animate-spin" : ""}`} />
+                  </button>
+                  <button
+                    id={`btn-delete-${source.id}`}
+                    onClick={() => handleDeleteSource(source.id, source.name)}
+                    disabled={isRunning || deletingId === source.id}
+                    className="p-2 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    title="Eliminar fuente y propiedades"
+                  >
+                    {deletingId === source.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-red-400" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
